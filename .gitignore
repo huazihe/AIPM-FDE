@@ -1,0 +1,10 @@
+.DS_Store
+.local/
+.learning/
+__pycache__/
+*.pyc
+.venv/
+dist/
+.env
+.env.*
+!.env.example

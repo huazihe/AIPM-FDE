@@ -1,0 +1,11 @@
+case_id,case_type,baseline_active_min,pilot_prepare_min,pilot_review_min,pilot_correction_min,pilot_operations_min,first_pass_fields_correct,fields_checked,exception_required,exception_routed,data_kind
+Q01,standard,24,4,6,0,1,10,10,false,false,synthetic
+Q02,standard,28,4,7,0,1,10,10,false,false,synthetic
+Q03,mass_unit_error,22,3,6,2,1,9,10,true,true,synthetic
+Q04,missing_price,35,6,9,0,1,10,10,true,true,synthetic
+Q05,quantity_changed,26,4,7,3,1,9,10,true,true,synthetic
+Q06,expired_price,31,5,8,0,1,10,10,true,true,synthetic
+Q07,standard,25,4,6,0,1,10,10,false,false,synthetic
+Q08,material_mismatch,29,5,8,4,1,9,10,true,true,synthetic
+Q09,revision_and_unit_conflict,40,8,10,8,1,8,10,true,true,synthetic
+Q10,standard,30,4,7,0,1,10,10,false,false,synthetic

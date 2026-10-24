@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>项目作品页 · AIPM-FDE</title>
+<style>
+:root{color-scheme:light;--paper:#f5f3ed;--ink:#1b302e;--muted:#60706d;--line:#d9ded5;--accent:#1d6d5c}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.75 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}main{max-width:1120px;margin:0 auto;padding:44px 32px 72px}nav{display:flex;justify-content:space-between;gap:20px;align-items:center;border-bottom:1px solid var(--line);padding-bottom:22px}nav strong{letter-spacing:.08em;font-size:14px}nav span{font-size:13px;color:var(--muted)}.tools{display:flex;gap:10px;flex-wrap:wrap;margin:28px 0 12px}button{font:inherit;font-size:14px;padding:10px 18px;border:1px solid var(--accent);background:var(--accent);color:white;border-radius:5px;cursor:pointer}button.secondary{background:transparent;color:var(--accent)}button:focus-visible{outline:3px solid #cc8d34;outline-offset:3px}.note{font-size:13px;color:var(--muted);margin:0}.message{min-height:28px;font-size:14px;color:var(--accent)}.message.error{color:#a43520}.hero{padding:32px 0;border-bottom:1px solid var(--line)}.badge{display:inline-block;border:1px solid #b6cfc4;color:var(--accent);font-size:13px;padding:3px 10px;border-radius:3px}h1{font-size:clamp(30px,5vw,48px);letter-spacing:-.04em;line-height:1.25;margin:20px 0 16px}#summary{max-width:750px;color:var(--muted);font-size:19px;margin:0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:38px;margin:30px 0}h2{font-size:19px;margin:0 0 14px}p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}.number{font-size:12px;color:var(--accent);font-weight:600;letter-spacing:.08em;margin-bottom:6px}.evidence{background:white;border:1px solid var(--line);padding:26px 28px}.evidence article{padding:16px 0;border-bottom:1px solid var(--line)}.evidence article:last-child{border:0;padding-bottom:0}.source{font-size:13px;color:var(--muted);margin-top:6px}ul{padding-left:21px;margin:0}li{padding:4px 0;white-space:pre-wrap;overflow-wrap:anywhere}footer{border-top:1px solid var(--line);padding-top:18px;margin-top:28px;color:var(--muted);font-size:13px}@media(max-width:650px){main{padding:26px 20px 40px}.grid{grid-template-columns:1fr;gap:24px}nav{align-items:flex-start;flex-direction:column;gap:4px}.evidence{padding:20px}#summary{font-size:17px}}
+</style>
+</head>
+<body>
+<main>
+<nav><strong>AIPM-FDE / LAB 01</strong><span>Agent 生成内容 · 工具承载结果</span></nav>
+<div class="tools"><button id="import" type="button">导入 JSON</button><button id="reset" class="secondary" type="button">恢复示例</button><input id="file" type="file" accept=".json,application/json" hidden></div>
+<p class="note">文件仅在本机展示，不上传、不自动保存。页面校验结构，内容与证据仍由你核对。</p>
+<p id="message" class="message" role="status" aria-live="polite"></p>
+<section class="hero"><span class="badge" id="status"></span><h1 id="title"></h1><p id="summary"></p></section>
+<div class="grid"><section><p class="number">01 / PROBLEM</p><h2>业务问题</h2><p id="problem"></p></section><section><p class="number">02 / APPROACH</p><h2>处理方法</h2><p id="approach"></p></section></div>
+<section class="evidence"><p class="number">03 / EVIDENCE</p><h2>主张与依据</h2><div id="evidence"></div></section>
+<div class="grid"><section><p class="number">04 / LIMITS</p><h2>验证边界</h2><ul id="limitations"></ul></section><section><p class="number">05 / NEXT</p><h2>下一步</h2><ul id="next_steps"></ul></section></div>
+<footer>本实验的默认内容为合成教学示例，不代表实际客户交付或模型测试。</footer>
+</main>
+<script>
+"use strict";
+const example = {
+  version: 1,
+  title: "询价资料核对助手",
+  summary: "一个用来练习业务证据、方案边界与结果承载的教学作品。",
+  status: "教学示例",
+  problem: "资料进入核价前，图纸版次、字段单位与价格有效性需要反复核对。",
+  approach: "Agent 整理候选字段与依据；确定性规则检查单位和有效期；业务与技术人员确认异常。",
+  evidence: [
+    {claim: "优先验证资料整理及异常分流", source: "制造案例 E03—E06", kind: "合成案例判断"},
+    {claim: "正式采购与持续采用仍未知", source: "制造案例 E08、E10", kind: "未验证边界"}
+  ],
+  limitations: ["没有运行真实模型或客户试点", "不自动审批价格或对外发送", "本页面只承载结构化结果，不执行推理"],
+  next_steps: ["明确下一轮质量底线与人工基线", "设计未参与规则讨论的检查样本", "确认工程交接和实际使用的责任人"]
+};
+function text(value, name) {
+  if (typeof value !== "string" || !value.trim() || value.length > 2000) throw new Error(name + " 需为 1—2000 字符的文本");
+}
+function validate(data) {
+  if (!data || typeof data !== "object" || Array.isArray(data) || data.version !== 1) throw new Error("version 必须为数字 1");
+  for (const key of ["title","summary","status","problem","approach"]) text(data[key], key);
+  for (const key of ["evidence","limitations","next_steps"]) {
+    if (!Array.isArray(data[key]) || data[key].length > 20) throw new Error(key + " 需为最多 20 项的数组");
+  }
+  for (const item of data.evidence) {
+    if (!item || typeof item !== "object" || Array.isArray(item)) throw new Error("evidence 每项必须是对象");
+    for (const key of ["claim","source","kind"]) text(item[key], "evidence." + key);
+  }
+  for (const key of ["limitations","next_steps"]) data[key].forEach(value => text(value,key));
+  return data;
+}
+function render(data) {
+  validate(data);
+  for (const key of ["title","summary","status","problem","approach"]) document.getElementById(key).textContent = data[key];
+  const container = document.getElementById("evidence");
+  container.replaceChildren();
+  data.evidence.forEach(item => {
+    const row=document.createElement("article"), claim=document.createElement("p"), source=document.createElement("p");
+    claim.textContent=item.claim;source.className="source";source.textContent=item.kind + " · " + item.source;
+    row.append(claim,source);container.append(row);
+  });
+  for (const key of ["limitations","next_steps"]) {
+    const list=document.getElementById(key);list.replaceChildren();
+    data[key].forEach(value=>{const item=document.createElement("li");item.textContent=value;list.append(item);});
+  }
+}
+function message(value,error=false){const node=document.getElementById("message");node.textContent=value;node.classList.toggle("error",error);}
+document.getElementById("import").addEventListener("click",()=>document.getElementById("file").click());
+let importRevision=0;
+document.getElementById("file").addEventListener("change",async event=>{
+  const file=event.target.files[0], revision=++importRevision;if(!file)return;
+  try {
+    if(file.size>1024*1024)throw new Error("文件不能超过 1 MiB");
+    const content=await file.text();
+    if(revision!==importRevision)return;
+    const data=validate(JSON.parse(content));render(data);message("已导入。请核对主张、来源和状态是否一致。");
+  } catch(error) {
+    if(revision===importRevision)message("未导入，原内容保留。"+(error instanceof SyntaxError?"文件不是有效的 JSON。":error.message),true);
+  } finally {if(revision===importRevision)event.target.value="";}
+});
+document.getElementById("reset").addEventListener("click",()=>{importRevision++;document.getElementById("file").value="";render(example);message("已恢复合成教学示例。");});
+render(example);message("正在显示合成教学示例。");
+</script>
+</body>
+</html>
